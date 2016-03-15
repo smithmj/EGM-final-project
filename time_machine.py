@@ -6,7 +6,6 @@ import csv
 import os
 import re
 import matplotlib.pyplot as plt  
-#import seaborn as sns
 
 ANTIBIOTICS = ['AMP','AM','CEC','CTX','ZOX','CXM','CRO','AMC', \
                'CAZ','CTT','SAM','CPR','CPD','TZP','FEP']
@@ -21,6 +20,9 @@ ADJ_MAT_DIR = 'adj_mat'
 GROWTH_RATE_FILE = 'growth_rate.csv'
 
 def import_arr(filename):
+    '''
+    Imports a csv adjacency matrix file into a numpy array 
+    '''
     with open(filename) as f:
         data = csv.reader(f)
         adj_mat = np.empty((0, 16))
@@ -85,7 +87,20 @@ def cycle_prob(ab_seq, prob_model, initial_state = None):
         return np.dot(initial_state, M)
     return M
 
-def repeated_cycle_prob(ab_seqs, prob_model, initial_state = None, plot = False, savefig = False):
+def repeated_cycle_prob(ab_seqs, prob_model, initial_state = None, plot = False, savefig = None):
+    '''
+    Caclulates and potentially plots the probability for a given seqence of antibiotics 
+
+    Inputs:
+        ab_seqs: a list of tuples of antibiotic sequences. For example: [('AM', 'TZP')] * 15 would give 
+            fifteen cycles of ('AM', 'TZP') sequence.
+        prob_model: either cpm or epm
+        initial_state: if specified it should be the row vector containing the intial state probabilities
+        plot: if True will generate a plot of the figure
+        savefig: if not None, indicates the name of the file for the plot to be saved in
+
+
+    '''
     num_cycles = len(ab_seqs)
     M = cycle_prob(ab_seqs[0], prob_model)
     if plot:
@@ -131,9 +146,9 @@ def repeated_cycle_prob(ab_seqs, prob_model, initial_state = None, plot = False,
         plt.margins(0.2)
         plt.subplots_adjust(bottom=0.15)
         plt.legend(bbox_to_anchor=(1., 1),loc=2, borderaxespad=0, fontsize='small')
-        if savefig:
+        if savefig != None:
             f = '_'.join(ab_seq)
-            plt.savefig('plots/{}_{}.png'.format(f, num_cycles), bbox_inches = 'tight')
+            plt.savefig(savefig, bbox_inches = 'tight')
             plt.close()
         else:
             plt.show()
@@ -143,12 +158,19 @@ def repeated_cycle_prob(ab_seqs, prob_model, initial_state = None, plot = False,
     return M
 
 def generate_plots(ab_seqs, initial_state):
+    '''
+    Generates plots for ab_seqs given an initial state for 15 and 50 cycles
+    '''
     for ab_seq in ab_seqs:
         repeated_cycle_prob(15, ab_seq, cpm, initial_state, plot = True, savefig = True)
         repeated_cycle_prob(50, ab_seq, cpm, initial_state, plot = True, savefig = True)
     return 
 
 def generate_tables(ab_seqs, initial_state):
+    '''
+    This function just formats the output probabilities for repeated_cycle_prob into 
+    a rows of a latex tabel
+    '''
     for ab_seq in ab_seqs:
         file_name = '_'.join(ab_seq)
         f = open('tables/{}'.format(file_name), 'w')
@@ -179,6 +201,10 @@ def optimize_seq(k, initial_state, prob_model):
     return best_seq, max_prob
 
 def re_optimize_seqs(k, initial_state, prob_model, num_cycles):
+    '''
+    Re-optimizes the sequences of length k after each completion of a sequence.
+    The number of times this process is repeated is specified by num_cycles
+    '''
     seqs = []
     best_seq, max_prob = optimize_seq(k, initial_state, prob_model)
     #if there's a tie, pick the first sequence. 
@@ -191,25 +217,6 @@ def re_optimize_seqs(k, initial_state, prob_model, num_cycles):
         state = cycle_prob(best_seq[0], prob_model, state)
     return seqs 
 
-def simulation(perc_susc, pop_size, num_cycles, ab_seq, prob_model):
-    pop = ['0000'] * int(perc_susc * pop_size) 
-    pop += ['1111'] * int((1 - perc_susc) * pop_size)
-    M = cycle_prob(ab_seq, prob_model)
-    for n in range(num_cycles):
-        # iterate over each bacteria in the population
-        for i in range(len(pop)):
-            row = GENO.index(pop[i])
-            lb = 0
-            p = random.uniform(0,1)
-            for col in range(len(M[row,:])):
-                if M[row,col] != 0:
-                    ub = lb + M[row,col]
-                    if lb <= p < ub:
-                        pop[i] = GENO[col]
-                        break 
-                    else:
-                        lb = ub
-    return pop
 
 
 
