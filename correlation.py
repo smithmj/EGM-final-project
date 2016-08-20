@@ -1,5 +1,7 @@
 import scipy.stats
 import pandas as pd
+#import matplotlib as mpl 
+#mpl.rc('font',family='Times New Roman')
 import matplotlib.pyplot as plt 
 
 
@@ -21,7 +23,8 @@ def prob_plot(k, file1, file2, x_label, y_label):
     plt.close()
     return corr, p_vals
 
-def rank_plot(k ,file1, file2, x_label, y_label, complete_plot = True):
+#def rank_plot(k,file1, file2, x_label, y_label, complete_plot = True):
+def rank_plot(file1, file2, x_label, y_label, savefig = None, complete_plot = True):
     df1 = pd.read_csv(file1, sep = '\t')
     df2 = pd.read_csv(file2, sep = '\t')
 
@@ -44,61 +47,41 @@ def rank_plot(k ,file1, file2, x_label, y_label, complete_plot = True):
     p_val = spearman[1]
 
     plt.plot(rank1, rank2, 'ro')
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.title('r = {}'.format(round(corr, 2)))
-    plt.savefig('plots/ranks_top_50_{}_vs_{}_{}.png'.format(x_label, y_label, k))
+    plt.xlabel(x_label, fontname = "serif")
+    plt.ylabel(y_label, fontname = "serif")
+    plt.title('r = {}'.format(round(corr, 2)), fontname = "serif")
+    #plt.savefig('plots/ranks_top_50_{}_vs_{}_{}.png'.format(x_label, y_label, k))
+    if savefig != None:
+        plt.savefig(savefig)
     plt.close()
     return corr, p_val
 
 if __name__ == '__main__':
-    print("1")
+    print("Infinite vs single cycle ")
     #rank_plot(2, 'rankings/results/seq_ranks_2.txt', 'rankings/results/eq_seq_ranks_2.txt', 'Single Cycle Rank', 'Equilibrium Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/seq_ranks_3.txt', 'rankings/results/eq_seq_ranks_3.txt', 'Single Cycle Rank', 'Equilibrium Rank', complete_plot = False)
-    rank_plot(4, 'rankings/results/seq_ranks_4.txt', 'rankings/results/eq_seq_ranks_4.txt', 'Single Cycle Rank', 'Equilibrium Rank', complete_plot = False)
-    print("2")
+    corr, p_val = rank_plot('rankings/results/seq_ranks.txt', 'rankings/results/eq_seq_ranks.txt', 'Single cycle rank\n(Short period)', 'Infinite cycle rank\n(Short period)', complete_plot = False)
+    print("corr: {}, p-val: {}".format(corr, p_val))
+    print("Infinite vs long period")
     #rank_plot(2, 'rankings/results/eq_seq_ranks_2.txt', 'rankings/results/long_period_ranks_2.txt', 'Equilibrium Rank', 'Long Period Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/eq_seq_ranks_3.txt', 'rankings/results/long_period_ranks_3.txt', 'Equilibrium Rank', 'Long Period Rank', complete_plot = False)
-    #rank_plot(4, 'rankings/results/eq_seq_ranks_4.txt', 'rankings/results/long_period_ranks_4.txt', 'Equilibrium Rank', 'Long Period Rank', complete_plot = False)
-    print("3")
+    corr, p_val = rank_plot('rankings/results/eq_seq_ranks.txt', 'rankings/results/long_period_ranks.txt', 'Infinite cycle rank\n(Short period)', 'Single cycle rank\n(Long period)', complete_plot = False)
+    print("corr: {}, p-val: {}".format(corr, p_val))
+    print("Single vs long period")
     #rank_plot(2, 'rankings/results/seq_ranks_2.txt', 'rankings/results/long_period_ranks_2.txt',  'Single Cycle Rank', 'Long Period Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/seq_ranks_3.txt', 'rankings/results/long_period_ranks_3.txt',  'Single Cycle Rank', 'Long Period Rank', complete_plot = False)
-    #rank_plot(4, 'rankings/results/seq_ranks_4.txt', 'rankings/results/long_period_ranks_4.txt',  'Single Cycle Rank', 'Long Period Rank', complete_plot = False)
-    print("4")
+    corr, p_val = rank_plot('rankings/results/seq_ranks.txt', 'rankings/results/long_period_ranks.txt',  'Short period rank\n(Single cycle)', 'Long period rank\n(Single cycle)', complete_plot = False)
+    print("corr: {}, p-val: {}".format(corr, p_val))
+    #print("4")
     #rank_plot(2, 'rankings/results/eq_seq_ranks_2.txt', 'rankings/results/eq_ranks_5perc_imm_2.txt', 'Equilibrium Rank', 'Equilibrium with Immigration Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/eq_seq_ranks_3.txt', 'rankings/results/eq_ranks_5perc_imm_3.txt', 'Equilibrium Rank', 'Equilibrium with Immigration Rank', complete_plot = False)
-    #rank_plot(4, 'rankings/results/eq_seq_ranks_4.txt', 'rankings/results/eq_ranks_5perc_imm_4.txt', 'Equilibrium Rank', 'Equilibrium with Immigration Rank', complete_plot = False)
-    print("5")
+    #rank_plot('rankings/results/eq_seq_ranks.txt', 'rankings/results/eq_seq_ranks_5perc_imm.txt', 'Infinite cycle rank', 'Infinite cycle with immigration rank', complete_plot = False)
+    #print("5")
     #rank_plot(2, 'rankings/results/seq_ranks_2.txt', 'rankings/results/seq_ranks_5perc_imm_2.txt', 'Single Cycle Rank', 'Single Cycle with Immigration Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/seq_ranks_3.txt', 'rankings/results/seq_ranks_5perc_imm_3.txt', 'Single Cycle Rank', 'Single Cycle with Immigration Rank', complete_plot = False)
-    #rank_plot(4, 'rankings/results/seq_ranks_4.txt', 'rankings/results/seq_ranks_5perc_imm_4.txt', 'Single Cycle Rank', 'Single Cycle with Immigration Rank', complete_plot = False)
-    print("6")
+    #rank_plot('rankings/results/seq_ranks.txt', 'rankings/results/seq_ranks_5perc_imm.txt', 'Single cycle rank\n(Short period)', 'Single cycle with immigration rank\n(Short period)', complete_plot = False)
+    #print("6")
     #rank_plot(2, 'rankings/results/long_period_ranks_2.txt', 'rankings/results/long_period_ranks_5perc_imm_2.txt', 'Long Period Rank', 'Long Period with Immigration Rank', complete_plot = False)
     #rank_plot(3, 'rankings/results/long_period_ranks_3.txt', 'rankings/results/long_period_ranks_5perc_imm_3.txt', 'Long Period Rank', 'Long Period with Immigration Rank', complete_plot = False)
-    rank_plot(4, 'rankings/results/long_period_ranks_4.txt', 'rankings/results/long_period_ranks_5perc_imm_4.txt', 'Long Period Rank', 'Long Period with Immigration Rank', complete_plot = False)
-    '''
-    rank_plot(2, 'eq_seq_probs_2.txt', 'seq_probs_2.txt', 'Equilibrium', 'Single Cycle')
-    rank_plot(3, 'eq_seq_probs_3.txt', 'seq_probs_3.txt', 'Equilibrium', 'Single Cycle')
-    rank_plot(4, 'eq_seq_probs_4.txt', 'seq_probs_4.txt', 'Equilibrium', 'Single Cycle')
-
-    rank_plot(2, 'eq_seq_probs_2.txt', 'long_period_seq_probs_2.txt', 'Equilibrium', 'Long Period')
-    rank_plot(3, 'eq_seq_probs_3.txt', 'long_period_seq_probs_3.txt', 'Equilibrium', 'Long Period')
-    rank_plot(4, 'eq_seq_probs_4.txt', 'long_period_seq_probs_4.txt', 'Equilibrium', 'Long Period')
-
-    rank_plot(2, 'long_period_seq_probs_2.txt', 'seq_probs_2.txt', 'Long Period', 'Single Cycle')
-    rank_plot(3, 'long_period_seq_probs_3.txt', 'seq_probs_3.txt', 'Long Period', 'Single Cycle')
-    rank_plot(4, 'long_period_seq_probs_4.txt', 'seq_probs_4.txt', 'Long Period', 'Single Cycle')
-
-    rank_plot(2, 'eq_seq_probs_2.txt', 'probs_5perc_imm_eq_2.txt', 'Equilibrium', 'Equilibrium with Immigration')
-    rank_plot(3, 'eq_seq_probs_3.txt', 'probs_5perc_imm_eq_3.txt', 'Equilibrium', 'Equilibrium with Immigration')
-    rank_plot(4, 'eq_seq_probs_4.txt', 'probs_5perc_imm_eq_4.txt', 'Equilibrium', 'Equilibrium with Immimgration')
-
-    rank_plot(2, 'seq_probs_2.txt', 'probs_5perc_imm_2.txt', 'Single Cycle', 'Single Cycle with Immigration')
-    rank_plot(3, 'seq_probs_3.txt', 'probs_5perc_imm_3.txt', 'Single Cycle', 'Single Cycle with Immigration')
-    rank_plot(4, 'seq_probs_4.txt', 'probs_5perc_imm_4.txt', 'Single Cycle', 'Single Cycle with Immigration')
-
-    rank_plot(2, 'long_period_seq_probs_2.txt', 'probs_5perc_imm_long_period_2.txt', 'Long Period', 'Long Period with Immigration')
-    rank_plot(3, 'long_period_seq_probs_3.txt', 'probs_5perc_imm_long_period_3.txt', 'Long Period', 'Long Period with Immigration')
-    rank_plot(4, 'long_period_seq_probs_4.txt', 'probs_5perc_imm_long_period_4.txt', 'Long Period', 'Long Period with Immigration')
-
-    '''
+    #rank_plot('rankings/results/long_period_ranks.txt', 'rankings/results/long_period_ranks_5perc_imm.txt', 'Single cycle rank\n(Long period)', 'Single cycle with immigration rank\n(Long period)', complete_plot = False)
+    

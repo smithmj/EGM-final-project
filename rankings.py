@@ -15,7 +15,7 @@ def rank_seq(filename, k, initial_state, prob_model, eq = False, long_period = F
     for seq in ab_seqs:
         seq_matrices = []
         for ab in seq:
-            m = prob_model(ab, immingration_prob = immigration_prob)
+            m = prob_model(ab, immigration_prob = immigration_prob)
             if long_period:
                 m = time_machine.eq_cycle_prob(m)
             seq_matrices.append(m)
@@ -58,13 +58,43 @@ def seq_probs(filename, k, initial_state, prob_model, eq = False, long_period = 
     f.close()
     return
 
+def combine_rankings(file1, file2, file3, file4,  new_filename):
+    h = []
+    heapq.heapify(h)
+    for filename in [file1, file2, file3, file4]:
+        f = open(filename, "r")
+        # don't need the header:
+        f.readline()
+        for line in f:
+            l = line.split("\t")
+            prob = float(l[1])
+            seq = l[2].strip()
+            # us the negative probability in the heap because the heap
+            # puts the smallest items on top. This means that we won't
+            # have to sort the heap later.
+            heapq.heappush(h, (-prob, seq))
+        f.close()
 
-
+    (neg_best_prob, best_seq) = heapq.heappop(h)
+    heapq.heappush(h, (neg_best_prob, best_seq))
+    f = open(new_filename, 'w')
+    f.write('Rank\t Probability\t Sequence\n')
+    rank = 1
+    while h != []:
+        prob, seq = heapq.heappop(h)
+        f.write('{}\t {}\t {}\n'.format(rank, -prob, seq))
+        rank += 1
+    f.close()
+    return (-neg_best_prob, best_seq)
 
 if __name__ == "__main__":
     initial_state = np.array([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-    
-    seq_probs('probs_5perc_imm_2.txt', 2, initial_state, time_machine.cpm, immigration_prob = 0.05)
-    seq_probs('probs_5perc_imm_eq_2.txt', 2, initial_state, time_machine.cpm, eq = True, immigration_prob = 0.05)
-    seq_probs('probs_5perc_imm_long_period_2.txt', 2, initial_state, time_machine.cpm, long_period = True, immigration_prob = 0.05)
 
+    #rank_seq("rankings/results/seq_ranks_1.txt", 1, initial_state, time_machine.cpm, eq = False, long_period = False)
+
+    #rank_seq("rankings/results/long_period_ranks_1.txt", 1, initial_state, time_machine.cpm, eq = False, long_period = True)
+
+    #rank_seq("rankings/results/eq_seq_ranks_1.txt", 1, initial_state, time_machine.cpm, eq = True, long_period = False)
+
+    rank_seq("eq_long_period_ranks_5.txt", 5, initial_state, time_machine.cpm, eq = True, long_period = True)
+    
