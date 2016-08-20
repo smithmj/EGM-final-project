@@ -247,11 +247,16 @@ def optimize_seq(k, initial_state, prob_model, ab_list = ANTIBIOTICS, eq = False
             best_seq.append(seq)
     return best_seq, max_prob
 
-def adaptive_optimize(initial_state, prob_model, ab_list = ANTIBIOTICS, immigration_prob = 0, number = 0):
-    #print("ANTIBIOTICS:", ANTIBIOTICS)
+def adaptive_optimize(initial_state, prob_model, ab_list = ANTIBIOTICS, immigration_prob = 0):
+    '''
+    Finds the optimal antibiotic based on minimizing the expected growth rates
+    initial_state: np array of the current genotype distribution
+    prob_model: cpm or epm
+    ab_list: list of possible antibiotics to choose from
+    immigration_prob: probability of immigration
+    '''
     growth_rate_cutoff = .001
     growth_rates = import_arr(GROWTH_RATE_FILE)
-    #print("ab_list inside function:", ab_list)
     min_expected_growth_rate = float("inf")
     best_ab = None
     for ab in ab_list:
@@ -265,8 +270,6 @@ def adaptive_optimize(initial_state, prob_model, ab_list = ANTIBIOTICS, immigrat
         if expected < min_expected_growth_rate:
             best_ab = ab
             min_expected_growth_rate = expected
-    print("best ab", best_ab)
-    print("expected gr", min_expected_growth_rate)
     return best_ab, min_expected_growth_rate
 
 def re_optimize_seqs(k, initial_state, prob_model, num_cycles, immigration_prob = 0):
@@ -305,11 +308,16 @@ def avg_growth_rate(ab):
     
     return avg
 
-def adaptive_cycling(initial_state, prob_model, num_cycles, immigration_prob = 0, return_expected_gr = False, number = 0):
-    
+def adaptive_cycling(initial_state, prob_model, num_cycles, immigration_prob = 0, return_expected_gr = False):
+    '''
+    Finds the adaptive cycling strategy based on minimizing the expected growth rates
+    initial_state: the initial genotype distribution
+    prob_model: cpm or epm
+    num_cycles: the number of antibiotics to find in the adaptive cycle
+    immigration_prob: probability of immigration
+    '''
     growth_rate_cutoff = .001
     growth_rates = import_arr(GROWTH_RATE_FILE)
-    #state = initial_state
     adaptive_seq = []
     ab_list = ['AMP','AM','CEC','CTX','ZOX','CXM','CRO','AMC', \
                'CAZ','CTT','SAM','CPR','CPD','TZP','FEP']
@@ -323,59 +331,33 @@ def adaptive_cycling(initial_state, prob_model, num_cycles, immigration_prob = 0
         if prev_ab != None:
             ab_list.remove(prev_ab)
             ab_list.sort()
-        #print("ab list", ab_list)
-        best_ab, expected_gr = adaptive_optimize(initial_state, prob_model, ab_list = ab_list, immigration_prob = immigration_prob, number = number)
-        #print("ab:", best_ab)
+        best_ab, expected_gr = adaptive_optimize(initial_state, prob_model, ab_list = ab_list, immigration_prob = immigration_prob)
         
         gr_list.append(expected_gr)
-        #best_ab, prob_susc = optimize_seq(1, state, prob_model, ab_list = ab_list, eq = False, immigration_prob = immigration_prob)
-        #best_ab = best_ab[0][0]
         if prev_ab != None:
             ab_list.append(prev_ab)
             ab_list.sort()
 
         prev_ab = best_ab
         adaptive_seq.append(best_ab)
-        #if number == 5:
-            #print("best ab:", best_ab)
-        M = prob_model(best_ab, immigration_prob)
-        #M = np.dot(M, M_ab)
+        M = prob_model(best_ab, immigration_prob)\
         initial_state = np.dot(initial_state, M)
-        #print("state:", initial_state)
         states.append(initial_state)
-        #print("expected_gr:", expected_gr)
-        # find the expected growth rate
         ab_index = ANTIBIOTICS.index(best_ab)
-        #expected = 0
-        #print("state:", state)
-        #for i in range(len(state)):
-        #    expected += state[i] * growth_rates[ab_index, i]
-       
-
+        
         while expected_gr <= .001 and len(adaptive_seq) < num_cycles:
             adaptive_seq.append(best_ab)
-            #print("ab:", best_ab)
             M = prob_model(best_ab, immigration_prob)
             initial_state = np.dot(initial_state, M)
-            #print("state:", initial_state)
             states.append(initial_state)
-            #print("state:", state)
             expected_gr = 0
 
             for i in range(len(initial_state)):
-                #print("state[i]:", state[i])
-                #print("growth_rates[ab_index, i]:", growth_rates[ab_index, i])
-                #print("state[i] * growth_rates[ab_index, i]:", state[i] * growth_rates[ab_index, i])
                 expected_gr += initial_state[i] * growth_rates[ab_index, i]
-                #print("calculating expected_gr:", expected_gr)
-            #print("EXPECTED:", expected_gr)
             gr_list.append(expected_gr)
-            #print("expectetd_gr:", expected_gr)
     states_arr = np.array(states[-50:])
-    #print(states_arr.shape)
     mean_state = np.mean(states_arr, axis = 0)
-    #print("mean_state:", mean_state)
-    #print(sum(mean_state))
+
 
     if return_expected_gr:
         return adaptive_seq, gr_list
